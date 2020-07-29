@@ -40,25 +40,35 @@ const decimalBtn = document.getElementById('decimal');
 // UI function
 const displayDigits = (displayVal, num) => {
     if (workingState) {
-        let displayAnswer;
         if (displayVal === 'error') {
-            displayAnswer = "Oops, you divided by 0";
+            display.textContent = "Oops, you divided by 0";
             workingState = false;
-        } else if (typeof displayVal === 'string') {  // when string is passed in, keep concatenating to get current value
-            displayVal += num;
-            currentValue = displayVal;
-            displayAnswer = numberWithCommas(currentValue);
+        } else if (typeof displayVal === 'string') {  // when a digit or decimal is passed in
+            if (num) {  // we're passing in a digit. displayVal = currentValue right now
+                displayVal += num;
+                currentValue = displayVal;
+                if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
+                    const [int, dec] = currentValue.split('.');
+                    display.textContent = numberWithCommas(int) + '.' + dec;
+                } else {
+                    display.textContent = numberWithCommas(currentValue);
+                }
+            } else {  // we're passing in a decimal
+                if (!currentValue.includes('.')) { // make sure there's no decimal yet
+                    currentValue += displayVal;
+                    display.textContent = currentValue;
+                }
+            }
         } else if (typeof displayVal === 'number') {   // when answer is passed in, just display it 
             numString = displayVal.toString();
             const [int, decimal] = numString.split('.');
             if (!decimal) {
-                displayAnswer = numberWithCommas(int); 
+                display.textContent = numberWithCommas(int); 
             } else {
                 const [int2, decimal2] = parseFloat(displayVal.toFixed(5)).toString().split('.');
-                displayAnswer = numberWithCommas(int2) + '.' + decimal2;
+                display.textContent = numberWithCommas(int2) + '.' + decimal2;
             }
         }
-        display.textContent = displayAnswer;
     }
 }
 
@@ -88,7 +98,7 @@ numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
 const operatorBtnArr = Array.from(document.querySelectorAll('.operator'));
 operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
     if (workingState) {
-        if (currentValue !== '') {  // make sure theres a current value before operator is run
+        if (currentValue !== '' && currentValue !== '.') {  // make sure theres a current value before operator is run
             savedValues.push(currentValue);
             currentValue = '';
             selectedOperators.push(e.target.id);
@@ -98,7 +108,7 @@ operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
 
 equalBtn.addEventListener('click', () => {
     if (workingState) {
-        if (savedValues.length > 0 && currentValue !== '') {
+        if (savedValues.length > 0 && currentValue !== '' && currentValue !== '.') {
             savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
             let answer;
         
@@ -127,6 +137,9 @@ equalBtn.addEventListener('click', () => {
 
 clearBtn.addEventListener('click', clear);
 
+decimalBtn.addEventListener('click', () => {
+    displayDigits('.');
+})
 
 
-
+// to-do: after pressing equal, don't allow user to keep attaching #s to the result. Start fresh

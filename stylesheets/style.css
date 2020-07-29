@@ -1,0 +1,41 @@
+h1 {
+    font-size: 60px;
+    text-align: center;
+    padding: 30px;
+}
+
+#main-container {
+    display:flex;
+    flex-direction: column;
+    margin: 0 auto;
+    width: 500px;
+}
+
+#display {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100px;
+    background-color: yellowgreen;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 40px;
+    padding: 0 15px;
+}
+
+#grid {
+    display: grid;
+    width: 100%;
+    height: 500px;
+    grid-template-rows: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+
+button {
+    font-size: 30px;
+}
+
+#button-0 {
+    grid-column-start: 1;
+    grid-column-end: span 2;
+}

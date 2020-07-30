@@ -21,9 +21,14 @@ const operate = (operator, num1, num2) => {
     }
 };
 
-function numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+const numberWithCommas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+const checkForAnAnswer = () => {
+    if (equalAnswer !== '') { // if you just pressed equal and got an answer before this
+        currentValue = '';
+        equalAnswer = ''; // set it back to empty string
+    }
+};
 
 // DOM objects
 const display = document.getElementById('display');
@@ -65,31 +70,37 @@ const displayDigits = (displayVal, num) => {
             if (!decimal) {
                 display.textContent = numberWithCommas(int); 
             } else {
-                const [int2, decimal2] = parseFloat(displayVal.toFixed(5)).toString().split('.');
+                const [int2, decimal2] = parseFloat(displayVal.toFixed(10)).toString().split('.');
                 display.textContent = numberWithCommas(int2) + '.' + decimal2;
             }
         }
     }
-}
+};
 
+let workingState;
 let currentValue;
+let equalAnswer;
 let savedValues;
 let selectedOperators;
-let workingState;
+let previousOperatorBtn;
 
 const clear = () => {
     currentValue = '';
+    equalAnswer = '';
     savedValues = [];
     selectedOperators = [];
     display.textContent = '0';
     workingState = true;
-}
+    previousOperatorBtn = '';
+};
 
 window.addEventListener('load', clear);
 
 const numberBtnArr = Array.from(document.querySelectorAll('.number'));
 numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
     if (workingState) {
+        checkForAnAnswer();
+        previousOperatorBtn = '';
         const number = e.target.id.substr(-1,1).toString();
         displayDigits(currentValue, number);
     }
@@ -98,17 +109,27 @@ numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
 const operatorBtnArr = Array.from(document.querySelectorAll('.operator'));
 operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
     if (workingState) {
+        const operatorSign = e.target.id;
+        if (previousOperatorBtn !== operatorSign && previousOperatorBtn !== '') {   // set to latest operator button clicked
+            selectedOperators.pop();
+            selectedOperators.push(operatorSign);
+            previousOperatorBtn = operatorSign;
+        }
         if (currentValue !== '' && currentValue !== '.') {  // make sure theres a current value before operator is run
             savedValues.push(currentValue);
             currentValue = '';
-            selectedOperators.push(e.target.id);
+            selectedOperators.push(operatorSign);
+            previousOperatorBtn = operatorSign;
+            console.log(selectedOperators);
+            console.log(previousOperatorBtn);
         }
     }
-}))
+}));
 
 equalBtn.addEventListener('click', () => {
     if (workingState) {
         if (savedValues.length > 0 && currentValue !== '' && currentValue !== '.') {
+            previousOperatorBtn = '';
             savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
             let answer;
         
@@ -125,6 +146,7 @@ equalBtn.addEventListener('click', () => {
                 displayDigits('error');
             } else {
                 currentValue = answer.toString();
+                equalAnswer = answer.toString();
                 displayDigits(answer);
                 console.log(savedValues);
                 console.log(selectedOperators);
@@ -133,13 +155,14 @@ equalBtn.addEventListener('click', () => {
             }
         }
     }
-})
+});
 
 clearBtn.addEventListener('click', clear);
 
 decimalBtn.addEventListener('click', () => {
-    displayDigits('.');
-})
-
-
-// to-do: after pressing equal, don't allow user to keep attaching #s to the result. Start fresh
+    if (workingState) {
+        checkForAnAnswer();
+        previousOperatorBtn = '';
+        displayDigits('.');
+    }
+});

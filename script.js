@@ -39,6 +39,15 @@ const formatDisplayString = () => {
     }
 };
 
+const pushCurrentValueAndOperator= (operatorSign) => {
+    savedValues.push(currentValue);
+    currentValue = '';
+    selectedOperators.push(operatorSign);
+    previousOperatorBtn = operatorSign;
+    console.log(selectedOperators);
+    console.log(previousOperatorBtn);
+};
+
 // DOM objects
 const display = document.getElementById('display');
 const clearBtn = document.getElementById('clear');
@@ -103,9 +112,14 @@ window.addEventListener('load', clear);
 const numberBtnArr = Array.from(document.querySelectorAll('.number'));
 numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
     if (workingState) {
-        checkForAnAnswer();
-        previousOperatorBtn = '';
         const number = e.target.id.substr(-1,1).toString();
+        checkForAnAnswer();
+        if ((number === '0' && currentValue === '0') || (number === '0' && display.textContent === '0')) return;
+        //     || (number !== '0' && currentValue === '0')
+        if (number !== '0' && currentValue === '0') {    // allow user to replace the 0 with new number
+            currentValue = '';
+        }
+        previousOperatorBtn = '';
         displayDigits(currentValue, number);
     }
 }));
@@ -120,44 +134,56 @@ operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
             previousOperatorBtn = operatorSign;
         }
         if (currentValue !== '' && currentValue !== '.') {  // make sure theres a current value before operator is run
-            savedValues.push(currentValue);
-            currentValue = '';
-            selectedOperators.push(operatorSign);
-            previousOperatorBtn = operatorSign;
-            console.log(selectedOperators);
-            console.log(previousOperatorBtn);
+            pushCurrentValueAndOperator(operatorSign);
+        } 
+        if (currentValue === '' && display.textContent === '0') { // set currentValue to 0 if you backspace into a defaulted 0
+            currentValue = '0';
+            pushCurrentValueAndOperator(operatorSign);
         }
     }
 }));
 
+
+const calcAndRenderAnswer = () => {
+    previousOperatorBtn = '';
+    savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
+    let answer;
+
+    for (let i = 0; i < selectedOperators.length; i++) {
+        if (i === 0) {
+            answer = operate(selectedOperators[0], parseFloat(savedValues[0]), parseFloat(savedValues[1]))
+        } else {
+            answer = operate(selectedOperators[i], answer, parseFloat(savedValues[i+1]));
+        }
+    }
+
+    if (answer === Infinity) {
+        currentValue = '';
+        displayDigits('error');
+    } else {
+        currentValue = answer.toString();
+        equalAnswer = answer.toString();
+        displayDigits(answer);
+        console.log(savedValues);
+        console.log(selectedOperators);
+        savedValues = [];
+        selectedOperators = [];
+    }
+};
+
 equalBtn.addEventListener('click', () => {
     if (workingState) {
         if (savedValues.length > 0 && currentValue !== '' && currentValue !== '.') {
-            previousOperatorBtn = '';
-            savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
-            let answer;
-        
-            for (let i = 0; i < selectedOperators.length; i++) {
-                if (i === 0) {
-                    answer = operate(selectedOperators[0], parseFloat(savedValues[0]), parseFloat(savedValues[1]))
-                } else {
-                    answer = operate(selectedOperators[i], answer, parseFloat(savedValues[i+1]));
-                }
-            }
-        
-            if (answer === Infinity) {
-                currentValue = '';
-                displayDigits('error');
-            } else {
-                currentValue = answer.toString();
-                equalAnswer = answer.toString();
-                displayDigits(answer);
-                console.log(savedValues);
-                console.log(selectedOperators);
-                savedValues = [];
-                selectedOperators = [];
-            }
+            calcAndRenderAnswer();
         }
+        if (savedValues.length > 0 && currentValue === '' && display.textContent === '0') {
+            currentValue = '0';
+            calcAndRenderAnswer();
+        }
+        // if (currentValue === '' && display.textContent === '0') { // set currentValue to 0 if you backspace into a defaulted 0
+        //     currentValue = '0';
+        //     pushCurrentValueAndOperator(operatorSign);
+        // }
     }
 });
 
@@ -165,6 +191,9 @@ clearBtn.addEventListener('click', clear);
 
 decimalBtn.addEventListener('click', () => {
     if (workingState) {
+        if (currentValue === '' && display.textContent === '0') {
+            currentValue = '0';
+        }
         checkForAnAnswer();
         previousOperatorBtn = '';
         displayDigits('.');
@@ -179,7 +208,7 @@ const removeDigits = () => {
             currentValue = digitArr.join('');
             // update UI
             if (currentValue === '') {
-                currentValue = '0';
+                // currentValue = '0';
                 display.textContent = '0';
             } else {
                 formatDisplayString();

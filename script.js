@@ -189,3 +189,21 @@ const removeDigits = () => {
 };
 
 backSpaceBtn.addEventListener('click', removeDigits);
+
+const changeSign = () => {
+    if (workingState) {
+        if (currentValue !== '' && currentValue !== '0' && currentValue !== '.') {
+            let digitArr = currentValue.split('');
+            if (parseFloat(currentValue) > 0) {
+                digitArr.unshift('-');
+                currentValue = digitArr.join('');
+            } else {
+                digitArr.shift();
+                currentValue = digitArr.join('');
+            }
+            formatDisplayString();
+        }
+    }
+};
+
+signBtn.addEventListener('click', changeSign);

@@ -30,6 +30,15 @@ const checkForAnAnswer = () => {
     }
 };
 
+const formatDisplayString = () => {
+    if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
+        const [int, dec] = currentValue.split('.');
+        display.textContent = numberWithCommas(int) + '.' + dec;
+    } else {
+        display.textContent = numberWithCommas(currentValue);
+    }
+};
+
 // DOM objects
 const display = document.getElementById('display');
 const clearBtn = document.getElementById('clear');
@@ -52,12 +61,7 @@ const displayDigits = (displayVal, num) => {
             if (num) {  // we're passing in a digit. displayVal = currentValue right now
                 displayVal += num;
                 currentValue = displayVal;
-                if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
-                    const [int, dec] = currentValue.split('.');
-                    display.textContent = numberWithCommas(int) + '.' + dec;
-                } else {
-                    display.textContent = numberWithCommas(currentValue);
-                }
+                formatDisplayString();
             } else {  // we're passing in a decimal
                 if (!currentValue.includes('.')) { // make sure there's no decimal yet
                     currentValue += displayVal;
@@ -166,3 +170,22 @@ decimalBtn.addEventListener('click', () => {
         displayDigits('.');
     }
 });
+
+const removeDigits = () => {
+    if (workingState) {
+        if (currentValue !== '' && equalAnswer === '') {
+            let digitArr = currentValue.split('');
+            digitArr.pop();
+            currentValue = digitArr.join('');
+            // update UI
+            if (currentValue === '') {
+                currentValue = '0';
+                display.textContent = '0';
+            } else {
+                formatDisplayString();
+            }
+        }
+    }
+};
+
+backSpaceBtn.addEventListener('click', removeDigits);

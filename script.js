@@ -30,16 +30,34 @@ const checkForAnAnswer = () => {
     }
 };
 
-const formatDisplayString = () => {
-    if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
-        const [int, dec] = currentValue.split('.');
-        display.textContent = numberWithCommas(int) + '.' + dec;
+// const formatDisplayString = () => {
+//     if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
+//         const [int, dec] = currentValue.split('.');
+//         display.textContent = numberWithCommas(int) + '.' + dec;
+//     } else {
+//         display.textContent = numberWithCommas(currentValue);
+//     }
+// };
+
+const formatDisplayString = (type, value) => {
+    let number;
+    let numberString;
+    if (type === 'string') {
+        number = parseFloat(currentValue);
+    } else if (type === 'number') {
+        number = value;
+    }
+    numberString = number.toString();
+    const [int, decimal] = numberString.split('.');
+    if (!decimal) {
+        display.textContent = numberWithCommas(int); 
     } else {
-        display.textContent = numberWithCommas(currentValue);
+        const [int2, decimal2] = parseFloat(number.toFixed(10)).toString().split('.');
+        display.textContent = numberWithCommas(int2) + '.' + decimal2;
     }
 };
 
-const pushCurrentValueAndOperator= (operatorSign) => {
+const pushCurrentValueAndOperator = (operatorSign) => {
     savedValues.push(currentValue);
     currentValue = '';
     selectedOperators.push(operatorSign);
@@ -70,7 +88,8 @@ const displayDigits = (displayVal, num) => {
             if (num) {  // we're passing in a digit. displayVal = currentValue right now
                 displayVal += num;
                 currentValue = displayVal;
-                formatDisplayString();
+                // formatDisplayString();
+                formatDisplayString('string');
             } else {  // we're passing in a decimal
                 if (!currentValue.includes('.')) { // make sure there's no decimal yet
                     currentValue += displayVal;
@@ -78,14 +97,15 @@ const displayDigits = (displayVal, num) => {
                 }
             }
         } else if (typeof displayVal === 'number') {   // when answer is passed in, just display it 
-            numString = displayVal.toString();
-            const [int, decimal] = numString.split('.');
-            if (!decimal) {
-                display.textContent = numberWithCommas(int); 
-            } else {
-                const [int2, decimal2] = parseFloat(displayVal.toFixed(10)).toString().split('.');
-                display.textContent = numberWithCommas(int2) + '.' + decimal2;
-            }
+            // numString = displayVal.toString();
+            // const [int, decimal] = numString.split('.');
+            // if (!decimal) {
+            //     display.textContent = numberWithCommas(int); 
+            // } else {
+            //     const [int2, decimal2] = parseFloat(displayVal.toFixed(10)).toString().split('.');
+            //     display.textContent = numberWithCommas(int2) + '.' + decimal2;
+            // }
+            formatDisplayString('number', displayVal);
         }
     }
 };
@@ -115,7 +135,6 @@ numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
         const number = e.target.id.substr(-1,1).toString();
         checkForAnAnswer();
         if ((number === '0' && currentValue === '0') || (number === '0' && display.textContent === '0')) return;
-        //     || (number !== '0' && currentValue === '0')
         if (number !== '0' && currentValue === '0') {    // allow user to replace the 0 with new number
             currentValue = '';
         }
@@ -132,14 +151,12 @@ operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
             selectedOperators.pop();
             selectedOperators.push(operatorSign);
             previousOperatorBtn = operatorSign;
-        }
-        if (currentValue !== '' && currentValue !== '.') {  // make sure theres a current value before operator is run
+        } else if (currentValue !== '' && currentValue !== '-' && currentValue !== '.') {  // make sure theres a valid current value before operator is run
             pushCurrentValueAndOperator(operatorSign);
-        } 
-        if (currentValue === '' && display.textContent === '0') { // set currentValue to 0 if you backspace into a defaulted 0
+        } else if ((currentValue === '' || currentValue === '-') && display.textContent === '0')  { // set currentValue to 0 if you backspace into a defaulted 0
             currentValue = '0';
             pushCurrentValueAndOperator(operatorSign);
-        }
+        } 
     }
 }));
 
@@ -173,17 +190,12 @@ const calcAndRenderAnswer = () => {
 
 equalBtn.addEventListener('click', () => {
     if (workingState) {
-        if (savedValues.length > 0 && currentValue !== '' && currentValue !== '.') {
+        if (savedValues.length > 0 && currentValue !== '' && currentValue !== '-' && currentValue !== '.') {
             calcAndRenderAnswer();
-        }
-        if (savedValues.length > 0 && currentValue === '' && display.textContent === '0') {
+        } else if (savedValues.length > 0 && display.textContent === '0' && (currentValue === '' || currentValue === '-')) {
             currentValue = '0';
             calcAndRenderAnswer();
         }
-        // if (currentValue === '' && display.textContent === '0') { // set currentValue to 0 if you backspace into a defaulted 0
-        //     currentValue = '0';
-        //     pushCurrentValueAndOperator(operatorSign);
-        // }
     }
 });
 
@@ -191,7 +203,7 @@ clearBtn.addEventListener('click', clear);
 
 decimalBtn.addEventListener('click', () => {
     if (workingState) {
-        if (currentValue === '' && display.textContent === '0') {
+        if ((currentValue === '' || currentValue === '-') && display.textContent === '0') {
             currentValue = '0';
         }
         checkForAnAnswer();
@@ -207,11 +219,11 @@ const removeDigits = () => {
             digitArr.pop();
             currentValue = digitArr.join('');
             // update UI
-            if (currentValue === '') {
-                // currentValue = '0';
+            if (currentValue === '' || currentValue === '-') {
                 display.textContent = '0';
             } else {
-                formatDisplayString();
+                // formatDisplayString();
+                formatDisplayString('string');
             }
         }
     }
@@ -230,7 +242,8 @@ const changeSign = () => {
                 digitArr.shift();
                 currentValue = digitArr.join('');
             }
-            formatDisplayString();
+            // formatDisplayString();
+            formatDisplayString('string');
         }
     }
 };

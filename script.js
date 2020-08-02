@@ -30,30 +30,23 @@ const checkForAnAnswer = () => {
     }
 };
 
-// const formatDisplayString = () => {
-//     if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
-//         const [int, dec] = currentValue.split('.');
-//         display.textContent = numberWithCommas(int) + '.' + dec;
-//     } else {
-//         display.textContent = numberWithCommas(currentValue);
-//     }
-// };
-
 const formatDisplayString = (type, value) => {
-    let number;
-    let numberString;
     if (type === 'string') {
-        number = parseFloat(currentValue);
+        if (currentValue.includes('.')) {   // check if there's a decimal already in currentValue. split integer and decimal and apply formatting
+            const [int, dec] = currentValue.split('.');
+            display.textContent = numberWithCommas(int) + '.' + dec;
+        } else {
+            display.textContent = numberWithCommas(currentValue);
+        }
     } else if (type === 'number') {
-        number = value;
-    }
-    numberString = number.toString();
-    const [int, decimal] = numberString.split('.');
-    if (!decimal) {
-        display.textContent = numberWithCommas(int); 
-    } else {
-        const [int2, decimal2] = parseFloat(number.toFixed(10)).toString().split('.');
-        display.textContent = numberWithCommas(int2) + '.' + decimal2;
+        let numberString = value.toString();
+        const [int, decimal] = numberString.split('.');
+        if (!decimal) {
+            display.textContent = numberWithCommas(int); 
+        } else {
+            const [int2, decimal2] = parseFloat(value.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
+            display.textContent = numberWithCommas(int2) + '.' + decimal2;
+        }
     }
 };
 
@@ -88,23 +81,15 @@ const displayDigits = (displayVal, num) => {
             if (num) {  // we're passing in a digit. displayVal = currentValue right now
                 displayVal += num;
                 currentValue = displayVal;
-                // formatDisplayString();
                 formatDisplayString('string');
             } else {  // we're passing in a decimal
                 if (!currentValue.includes('.')) { // make sure there's no decimal yet
                     currentValue += displayVal;
-                    display.textContent = currentValue;
+                    const int = currentValue.slice(0,-1);
+                    display.textContent = numberWithCommas(int) + '.';
                 }
             }
         } else if (typeof displayVal === 'number') {   // when answer is passed in, just display it 
-            // numString = displayVal.toString();
-            // const [int, decimal] = numString.split('.');
-            // if (!decimal) {
-            //     display.textContent = numberWithCommas(int); 
-            // } else {
-            //     const [int2, decimal2] = parseFloat(displayVal.toFixed(10)).toString().split('.');
-            //     display.textContent = numberWithCommas(int2) + '.' + decimal2;
-            // }
             formatDisplayString('number', displayVal);
         }
     }
@@ -129,10 +114,14 @@ const clear = () => {
 
 window.addEventListener('load', clear);
 
-const numberBtnArr = Array.from(document.querySelectorAll('.number'));
-numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
+const pressedNumber = event => {
     if (workingState) {
-        const number = e.target.id.substr(-1,1).toString();
+        let number;
+        if (event.type === 'click') {
+            number = event.target.id.substr(-1,1).toString();
+        } else if (event.type === 'keydown') {
+            number = event.key;
+        }
         checkForAnAnswer();
         if ((number === '0' && currentValue === '0') || (number === '0' && display.textContent === '0')) return;
         if (number !== '0' && currentValue === '0') {    // allow user to replace the 0 with new number
@@ -141,12 +130,53 @@ numberBtnArr.forEach(btn => btn.addEventListener('click', e => {
         previousOperatorBtn = '';
         displayDigits(currentValue, number);
     }
-}));
+};
 
-const operatorBtnArr = Array.from(document.querySelectorAll('.operator'));
-operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
+const numberBtnArr = Array.from(document.querySelectorAll('.number'));
+numberBtnArr.forEach(btn => btn.addEventListener('click', pressedNumber
+// e => {
+//     if (workingState) {
+//         const number = e.target.id.substr(-1,1).toString();
+//         checkForAnAnswer();
+//         if ((number === '0' && currentValue === '0') || (number === '0' && display.textContent === '0')) return;
+//         if (number !== '0' && currentValue === '0') {    // allow user to replace the 0 with new number
+//             currentValue = '';
+//         }
+//         previousOperatorBtn = '';
+//         displayDigits(currentValue, number);
+//     }
+// }
+));
+
+
+
+// document.addEventListener('keydown', event => console.log(event));
+// document.addEventListener('click', event => console.log(event));
+
+// event.type = 'keypress' or 'click'
+
+const pressedOperator = event => {
     if (workingState) {
-        const operatorSign = e.target.id;
+        let operatorSign;
+        if (event.type === 'click') {
+            operatorSign = event.target.id;
+        } else if (event.type === 'keydown') {
+            switch(event.key) {
+                case '+':
+                    operatorSign = 'plus'
+                    break;
+                case '-':
+                    operatorSign = 'minus'
+                    break;
+                case '/':
+                    operatorSign = 'divide'
+                    break;
+                case '*':
+                    operatorSign = 'multiply'
+                    break; 
+            }
+        }
+
         if (previousOperatorBtn !== operatorSign && previousOperatorBtn !== '') {   // set to latest operator button clicked
             selectedOperators.pop();
             selectedOperators.push(operatorSign);
@@ -158,14 +188,34 @@ operatorBtnArr.forEach(operator => operator.addEventListener('click', e => {
             pushCurrentValueAndOperator(operatorSign);
         } 
     }
-}));
+};
+
+
+
+const operatorBtnArr = Array.from(document.querySelectorAll('.operator'));
+operatorBtnArr.forEach(operator => operator.addEventListener('click', pressedOperator
+// e => {
+//     if (workingState) {
+//         const operatorSign = e.target.id;
+//         if (previousOperatorBtn !== operatorSign && previousOperatorBtn !== '') {   // set to latest operator button clicked
+//             selectedOperators.pop();
+//             selectedOperators.push(operatorSign);
+//             previousOperatorBtn = operatorSign;
+//         } else if (currentValue !== '' && currentValue !== '-' && currentValue !== '.') {  // make sure theres a valid current value before operator is run
+//             pushCurrentValueAndOperator(operatorSign);
+//         } else if ((currentValue === '' || currentValue === '-') && display.textContent === '0')  { // set currentValue to 0 if you backspace into a defaulted 0
+//             currentValue = '0';
+//             pushCurrentValueAndOperator(operatorSign);
+//         } 
+//     }
+// }
+));
 
 
 const calcAndRenderAnswer = () => {
     previousOperatorBtn = '';
     savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
     let answer;
-
     for (let i = 0; i < selectedOperators.length; i++) {
         if (i === 0) {
             answer = operate(selectedOperators[0], parseFloat(savedValues[0]), parseFloat(savedValues[1]))
@@ -173,7 +223,6 @@ const calcAndRenderAnswer = () => {
             answer = operate(selectedOperators[i], answer, parseFloat(savedValues[i+1]));
         }
     }
-
     if (answer === Infinity) {
         currentValue = '';
         displayDigits('error');
@@ -188,7 +237,7 @@ const calcAndRenderAnswer = () => {
     }
 };
 
-equalBtn.addEventListener('click', () => {
+const pressedEqual = () => {
     if (workingState) {
         if (savedValues.length > 0 && currentValue !== '' && currentValue !== '-' && currentValue !== '.') {
             calcAndRenderAnswer();
@@ -197,11 +246,25 @@ equalBtn.addEventListener('click', () => {
             calcAndRenderAnswer();
         }
     }
-});
+};
+
+equalBtn.addEventListener('click', pressedEqual
+// () => {
+//     if (workingState) {
+//         if (savedValues.length > 0 && currentValue !== '' && currentValue !== '-' && currentValue !== '.') {
+//             calcAndRenderAnswer();
+//         } else if (savedValues.length > 0 && display.textContent === '0' && (currentValue === '' || currentValue === '-')) {
+//             currentValue = '0';
+//             calcAndRenderAnswer();
+//         }
+//     }
+// }
+);
 
 clearBtn.addEventListener('click', clear);
 
-decimalBtn.addEventListener('click', () => {
+
+const pressedDecimal = () => {
     if (workingState) {
         if ((currentValue === '' || currentValue === '-') && display.textContent === '0') {
             currentValue = '0';
@@ -210,7 +273,21 @@ decimalBtn.addEventListener('click', () => {
         previousOperatorBtn = '';
         displayDigits('.');
     }
-});
+};
+
+decimalBtn.addEventListener('click', pressedDecimal
+// () => {
+//     if (workingState) {
+//         if ((currentValue === '' || currentValue === '-') && display.textContent === '0') {
+//             currentValue = '0';
+//         }
+//         checkForAnAnswer();
+//         previousOperatorBtn = '';
+//         displayDigits('.');
+//     }
+// }
+);
+
 
 const removeDigits = () => {
     if (workingState) {
@@ -222,7 +299,6 @@ const removeDigits = () => {
             if (currentValue === '' || currentValue === '-') {
                 display.textContent = '0';
             } else {
-                // formatDisplayString();
                 formatDisplayString('string');
             }
         }
@@ -242,10 +318,29 @@ const changeSign = () => {
                 digitArr.shift();
                 currentValue = digitArr.join('');
             }
-            // formatDisplayString();
-            formatDisplayString('string');
+            // formatDisplayString('string');
+            formatDisplayString('number', parseFloat(currentValue));
         }
     }
 };
 
 signBtn.addEventListener('click', changeSign);
+
+
+// add key events for : 1-9, +, -, / , *, decimal, delete, return/enter/=
+
+document.addEventListener('keydown', e => {
+    if (e.key >= 0 && e.key <= 9) {
+        pressedNumber(e);
+    } else if (e.key === '+' || e.key === '-' || e.key === '/' || e.key === '*') {
+        pressedOperator(e);
+    } else if (e.key === '.') {
+        pressedDecimal();
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        removeDigits();
+    } else if (e.key === 'Enter' || e.key === '=') {
+        pressedEqual();
+    } else if (e.key === 'Clear') {
+        clear();
+    }
+});

@@ -60,7 +60,8 @@ const pushCurrentValueAndOperator = (operatorSign) => {
 };
 
 // DOM objects
-const display = document.getElementById('display');
+const display = document.getElementById('display-answer');
+const displayCalc = document.getElementById('display-calc');
 const clearBtn = document.getElementById('clear');
 const signBtn = document.getElementById('sign');
 const backSpaceBtn = document.getElementById('backspace');
@@ -102,12 +103,14 @@ let savedValues;
 let selectedOperators;
 let previousOperatorBtn;
 
+
 const clear = () => {
     currentValue = '';
     equalAnswer = '';
     savedValues = [];
     selectedOperators = [];
     display.textContent = '0';
+    displayCalc.textContent = '';
     workingState = true;
     previousOperatorBtn = '';
 };
@@ -133,27 +136,45 @@ const pressedNumber = event => {
 };
 
 const numberBtnArr = Array.from(document.querySelectorAll('.number'));
-numberBtnArr.forEach(btn => btn.addEventListener('click', pressedNumber
-// e => {
-//     if (workingState) {
-//         const number = e.target.id.substr(-1,1).toString();
-//         checkForAnAnswer();
-//         if ((number === '0' && currentValue === '0') || (number === '0' && display.textContent === '0')) return;
-//         if (number !== '0' && currentValue === '0') {    // allow user to replace the 0 with new number
-//             currentValue = '';
-//         }
-//         previousOperatorBtn = '';
-//         displayDigits(currentValue, number);
-//     }
-// }
-));
+numberBtnArr.forEach(btn => btn.addEventListener('click', pressedNumber));
 
+const updateDisplayCalc = () => {
+    const formatCalcDisplay = (string) => {
+        const [int, dec]  = string.split('.');
+        if (!dec || (dec.split('').every(digit => digit === '0'))) {
+            return numberWithCommas(int);
+        } else {
+            const number = parseFloat(string);
+            const [int2, decimal2] = parseFloat(number.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
+            return numberWithCommas(int2) + '.' + decimal2;
+        }
+    };
+    const signs = {
+        'plus': '+',
+        'minus': '-',
+        'divide': '÷',
+        'multiply': 'x',
+        'equal': '='
+    };
 
+    let calcString = '';
+    let valuesCount = 0;
+    let operatorsCount = 0;
+    for (let i = 0; i < savedValues.length + selectedOperators.length; i++) {
+        if (i === 0) {
+            calcString += formatCalcDisplay(savedValues[valuesCount]);
+            valuesCount++;
+        } else if (i % 2 === 1) {
+            calcString += ' ' + signs[selectedOperators[operatorsCount]] + ' ';
+            operatorsCount++;
+        } else if (i % 2 === 0) {
+            calcString += formatCalcDisplay(savedValues[valuesCount]);
+            valuesCount++;
+        }
+    }
 
-// document.addEventListener('keydown', event => console.log(event));
-// document.addEventListener('click', event => console.log(event));
-
-// event.type = 'keypress' or 'click'
+    displayCalc.textContent = calcString;
+};
 
 const pressedOperator = event => {
     if (workingState) {
@@ -181,40 +202,25 @@ const pressedOperator = event => {
             selectedOperators.pop();
             selectedOperators.push(operatorSign);
             previousOperatorBtn = operatorSign;
-        } else if (currentValue !== '' && currentValue !== '-' && currentValue !== '.') {  // make sure theres a valid current value before operator is run
+        } 
+
+        if (currentValue !== '' && currentValue !== '-' && currentValue !== '.') {  // make sure theres a valid current value before operator is run
             pushCurrentValueAndOperator(operatorSign);
         } else if ((currentValue === '' || currentValue === '-') && display.textContent === '0')  { // set currentValue to 0 if you backspace into a defaulted 0
             currentValue = '0';
             pushCurrentValueAndOperator(operatorSign);
         } 
+        updateDisplayCalc();
     }
 };
 
-
-
 const operatorBtnArr = Array.from(document.querySelectorAll('.operator'));
-operatorBtnArr.forEach(operator => operator.addEventListener('click', pressedOperator
-// e => {
-//     if (workingState) {
-//         const operatorSign = e.target.id;
-//         if (previousOperatorBtn !== operatorSign && previousOperatorBtn !== '') {   // set to latest operator button clicked
-//             selectedOperators.pop();
-//             selectedOperators.push(operatorSign);
-//             previousOperatorBtn = operatorSign;
-//         } else if (currentValue !== '' && currentValue !== '-' && currentValue !== '.') {  // make sure theres a valid current value before operator is run
-//             pushCurrentValueAndOperator(operatorSign);
-//         } else if ((currentValue === '' || currentValue === '-') && display.textContent === '0')  { // set currentValue to 0 if you backspace into a defaulted 0
-//             currentValue = '0';
-//             pushCurrentValueAndOperator(operatorSign);
-//         } 
-//     }
-// }
-));
-
+operatorBtnArr.forEach(operator => operator.addEventListener('click', pressedOperator));
 
 const calcAndRenderAnswer = () => {
     previousOperatorBtn = '';
     savedValues.push(currentValue);  // push in the currentValue you entered just before pressing equal
+    updateDisplayCalc();
     let answer;
     for (let i = 0; i < selectedOperators.length; i++) {
         if (i === 0) {
@@ -248,21 +254,9 @@ const pressedEqual = () => {
     }
 };
 
-equalBtn.addEventListener('click', pressedEqual
-// () => {
-//     if (workingState) {
-//         if (savedValues.length > 0 && currentValue !== '' && currentValue !== '-' && currentValue !== '.') {
-//             calcAndRenderAnswer();
-//         } else if (savedValues.length > 0 && display.textContent === '0' && (currentValue === '' || currentValue === '-')) {
-//             currentValue = '0';
-//             calcAndRenderAnswer();
-//         }
-//     }
-// }
-);
+equalBtn.addEventListener('click', pressedEqual);
 
 clearBtn.addEventListener('click', clear);
-
 
 const pressedDecimal = () => {
     if (workingState) {
@@ -275,19 +269,7 @@ const pressedDecimal = () => {
     }
 };
 
-decimalBtn.addEventListener('click', pressedDecimal
-// () => {
-//     if (workingState) {
-//         if ((currentValue === '' || currentValue === '-') && display.textContent === '0') {
-//             currentValue = '0';
-//         }
-//         checkForAnAnswer();
-//         previousOperatorBtn = '';
-//         displayDigits('.');
-//     }
-// }
-);
-
+decimalBtn.addEventListener('click', pressedDecimal);
 
 const removeDigits = () => {
     if (workingState) {
@@ -318,16 +300,12 @@ const changeSign = () => {
                 digitArr.shift();
                 currentValue = digitArr.join('');
             }
-            // formatDisplayString('string');
             formatDisplayString('number', parseFloat(currentValue));
         }
     }
 };
 
 signBtn.addEventListener('click', changeSign);
-
-
-// add key events for : 1-9, +, -, / , *, decimal, delete, return/enter/=
 
 document.addEventListener('keydown', e => {
     if (e.key >= 0 && e.key <= 9) {

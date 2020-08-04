@@ -26,11 +26,13 @@ h1 {
 #display-calc {
     background-color: floralwhite;
     font-size: 25px;
+    max-width: 100%;
 }   
 
 #display-answer {
     background-color: palegoldenrod;
     font-size: 45px;
+    max-width: 100%;
 }
 
 #grid {

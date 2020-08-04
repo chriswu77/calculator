@@ -45,7 +45,13 @@ const formatDisplayString = (type, value) => {
             display.textContent = numberWithCommas(int); 
         } else {
             const [int2, decimal2] = parseFloat(value.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
-            display.textContent = numberWithCommas(int2) + '.' + decimal2;
+            if (decimal2 === undefined) {
+                display.textContent = numberString;
+                // console.log(parseFloat(numberString));
+                // console.log(value);
+            } else {
+                display.textContent = numberWithCommas(int2) + '.' + decimal2;
+            }
         }
     }
 };
@@ -144,9 +150,21 @@ const updateDisplayCalc = () => {
         if (!dec || (dec.split('').every(digit => digit === '0'))) {
             return numberWithCommas(int);
         } else {
+            // const number = parseFloat(string);
+            // const [int2, decimal2] = number.toFixed(10).replace(/\.?0+$/,"").split('.');   // get rid of the extra zero's
+            // if (decimal2 === undefined) {
+            //     return number.toString();   // return scientific notation version if too much decimal points
+            // } else {
+            //     return numberWithCommas(int2) + '.' + decimal2;
+            // }
+
             const number = parseFloat(string);
             const [int2, decimal2] = parseFloat(number.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
-            return numberWithCommas(int2) + '.' + decimal2;
+            if (decimal2 === undefined) {
+                return number.toString();
+            } else {
+                return numberWithCommas(int2) + '.' + decimal2;
+            }
         }
     };
     const signs = {
@@ -308,6 +326,7 @@ const changeSign = () => {
 signBtn.addEventListener('click', changeSign);
 
 document.addEventListener('keydown', e => {
+    e.preventDefault();
     if (e.key >= 0 && e.key <= 9) {
         pressedNumber(e);
     } else if (e.key === '+' || e.key === '-' || e.key === '/' || e.key === '*') {
@@ -322,3 +341,5 @@ document.addEventListener('keydown', e => {
         clear();
     }
 });
+
+document.addEventListener('keydown', e => console.log(e));

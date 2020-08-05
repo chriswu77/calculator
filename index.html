@@ -4,14 +4,19 @@
         <meta charset="utf-8">
         <link href='stylesheets/reset.css' rel='stylesheet'>
         <link href='stylesheets/style.css' rel='stylesheet'>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet"> 
     </head>
 
     <body>
         <h1>Calculator</h1>
         <div id='main-container'>
             <div id='display-container'>
-                <div id='display-calc'></div>
-                <div id='display-answer'>0</div>
+                <div class='fitty-cent'>
+                    <div id='display-calc' class='fit'></div>
+                </div>
+                <div class='fitty-cent'>
+                    <div id='display-answer' class='fit'>0</div>
+                </div>
             </div>
             <div id='grid'>
                 <button id='clear'>clear</button>
@@ -37,5 +42,6 @@
         </div>
 
         <script src='script.js'></script>
+        <script src='fitty.min.js'></script>
     </body>
 </html>

@@ -1,14 +1,33 @@
+html {
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    background-color: #FEF2CE;
+}
+
+.fit {
+    display: inline-block;
+    white-space: nowrap;
+}
+
 h1 {
     font-size: 60px;
     text-align: center;
     padding: 30px;
+    color: #404E5B;
 }
 
 #main-container {
     display:flex;
     flex-direction: column;
     margin: 0 auto;
-    width: 500px;
+    width: 400px;
+    box-shadow: 0px 6px 12px  rgba(0, 0, 0, 0.22);
+}
+
+.fitty-cent {
+    max-width: 100%;
 }
 
 #display-container {
@@ -16,21 +35,21 @@ h1 {
     flex-direction: column;
     box-sizing: border-box;
     width: 100%;
-    height: 100px;
-    padding: 0 15px;
-    background-color: greenyellow;
-    justify-content: space-evenly;
+    height: 150px;
+    padding: 30px 15px;
+    background-color: #404E5B;
+    justify-content: space-between;
     align-items: flex-end;
+    color: #FFFFFF;
 }
 
 #display-calc {
-    background-color: floralwhite;
-    font-size: 25px;
+    font-size: 20px;
     max-width: 100%;
+    font-weight: 300;
 }   
 
 #display-answer {
-    background-color: palegoldenrod;
     font-size: 45px;
     max-width: 100%;
 }
@@ -38,16 +57,71 @@ h1 {
 #grid {
     display: grid;
     width: 100%;
-    height: 500px;
+    height: 400px;
     grid-template-rows: repeat(5, 1fr);
     grid-template-columns: repeat(4, 1fr);
 }
 
 button {
-    font-size: 30px;
+    font-size: 25px;
+    border: none;
+    font-family: 'Open Sans', sans-serif;
+    color: #404E5B;
+}
+
+button:focus {
+    outline: none;
 }
 
 #button-0 {
     grid-column-start: 1;
     grid-column-end: span 2;
 }
+
+.operator {
+    background-color: #f8be00a4;
+}
+
+.operator:hover {
+    background-color: #ECB50A;
+}
+
+.operator:active, .operator:focus {
+    font-weight: 600;
+    background-color: #ECB50A;
+    box-shadow: inset 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+#equal {
+    background-color: #F9586E;
+    color: #FFFFFF;
+}
+
+#clear, #sign, #backspace {
+    background-color: #F2EFEF;
+}
+
+#clear:hover, #sign:hover, #backspace:hover {
+    background-color: #E8E3E3;
+}
+
+#clear:focus, #sign:focus, #backspace:focus, #clear:active, #sign:active, #backspace:active {
+    font-weight: 600;
+    background: #E8E3E3;
+    box-shadow: inset 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.number, #decimal {
+    background-color: #FFFFFF;
+}
+
+.number:hover, #decimal:hover {
+    background-color: #F8F8F8;
+}
+
+.number:focus, #decimal:focus, .number:active, #decimal:active {
+    font-weight: 600;
+    background: #F8F8F8;
+    box-shadow: inset 0px 2px 6px rgba(0, 0, 0, 0.08);
+}
+

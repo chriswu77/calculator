@@ -47,13 +47,12 @@ const formatDisplayString = (type, value) => {
             const [int2, decimal2] = parseFloat(value.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
             if (decimal2 === undefined) {
                 display.textContent = numberString;
-                // console.log(parseFloat(numberString));
-                // console.log(value);
             } else {
                 display.textContent = numberWithCommas(int2) + '.' + decimal2;
             }
         }
     }
+    fitty(display, {maxSize: 45});
 };
 
 const pushCurrentValueAndOperator = (operatorSign) => {
@@ -81,23 +80,27 @@ const decimalBtn = document.getElementById('decimal');
 // UI function
 const displayDigits = (displayVal, num) => {
     if (workingState) {
-        if (displayVal === 'error') {
-            display.textContent = "Oops, you divided by 0";
-            workingState = false;
-        } else if (typeof displayVal === 'string') {  // when a digit or decimal is passed in
-            if (num) {  // we're passing in a digit. displayVal = currentValue right now
-                displayVal += num;
-                currentValue = displayVal;
-                formatDisplayString('string');
-            } else {  // we're passing in a decimal
-                if (!currentValue.includes('.')) { // make sure there's no decimal yet
-                    currentValue += displayVal;
-                    const int = currentValue.slice(0,-1);
-                    display.textContent = numberWithCommas(int) + '.';
-                }
+        if (currentValue.length <= 34) {
+            // console.log(currentValue,currentValue.length);
+            display.style.fontSize = '45px';
+            if (displayVal === 'error') {
+                display.textContent = "Oops, you divided by 0";
+                workingState = false;
+            } else if (typeof displayVal === 'string') {  // when a digit or decimal is passed in
+                if (num) {  // we're passing in a digit. displayVal = currentValue right now
+                    displayVal += num;
+                    currentValue = displayVal;
+                    formatDisplayString('string');
+                } else {  // we're passing in a decimal
+                    if (!currentValue.includes('.')) { // make sure there's no decimal yet
+                        currentValue += displayVal;
+                        const int = currentValue.slice(0,-1);
+                        display.textContent = numberWithCommas(int) + '.';
+                    }
+                }   
+            } else if (typeof displayVal === 'number') {   // when answer is passed in, just display it 
+                formatDisplayString('number', displayVal);
             }
-        } else if (typeof displayVal === 'number') {   // when answer is passed in, just display it 
-            formatDisplayString('number', displayVal);
         }
     }
 };
@@ -109,6 +112,10 @@ let savedValues;
 let selectedOperators;
 let previousOperatorBtn;
 
+const resetDisplayFont = () => {
+    display.style.fontSize = '45px';
+    displayCalc.style.fontSize = '20px';
+};
 
 const clear = () => {
     currentValue = '';
@@ -119,6 +126,7 @@ const clear = () => {
     displayCalc.textContent = '';
     workingState = true;
     previousOperatorBtn = '';
+    resetDisplayFont();
 };
 
 window.addEventListener('load', clear);
@@ -148,16 +156,11 @@ const updateDisplayCalc = () => {
     const formatCalcDisplay = (string) => {
         const [int, dec]  = string.split('.');
         if (!dec || (dec.split('').every(digit => digit === '0'))) {
+            if (int.length > 21) {
+                return parseFloat(int).toExponential(10);
+            }
             return numberWithCommas(int);
         } else {
-            // const number = parseFloat(string);
-            // const [int2, decimal2] = number.toFixed(10).replace(/\.?0+$/,"").split('.');   // get rid of the extra zero's
-            // if (decimal2 === undefined) {
-            //     return number.toString();   // return scientific notation version if too much decimal points
-            // } else {
-            //     return numberWithCommas(int2) + '.' + decimal2;
-            // }
-
             const number = parseFloat(string);
             const [int2, decimal2] = parseFloat(number.toFixed(10)).toString().split('.');   // keep answers fixed to 10 places
             if (decimal2 === undefined) {
@@ -174,7 +177,6 @@ const updateDisplayCalc = () => {
         'multiply': 'x',
         'equal': '='
     };
-
     let calcString = '';
     let valuesCount = 0;
     let operatorsCount = 0;
@@ -190,8 +192,9 @@ const updateDisplayCalc = () => {
             valuesCount++;
         }
     }
-
+    displayCalc.style.fontSize = '20px';
     displayCalc.textContent = calcString;
+    fitty(displayCalc, {maxSize: 20});
 };
 
 const pressedOperator = event => {
@@ -342,4 +345,4 @@ document.addEventListener('keydown', e => {
     }
 });
 
-document.addEventListener('keydown', e => console.log(e));
+// document.addEventListener('keydown', e => console.log(e));

@@ -60,8 +60,6 @@ const pushCurrentValueAndOperator = (operatorSign) => {
     currentValue = '';
     selectedOperators.push(operatorSign);
     previousOperatorBtn = operatorSign;
-    console.log(selectedOperators);
-    console.log(previousOperatorBtn);
 };
 
 // DOM objects
@@ -81,7 +79,6 @@ const decimalBtn = document.getElementById('decimal');
 const displayDigits = (displayVal, num) => {
     if (workingState) {
         if (currentValue.length <= 34) {
-            // console.log(currentValue,currentValue.length);
             display.style.fontSize = '45px';
             if (displayVal === 'error') {
                 display.textContent = "Oops, you divided by 0";
@@ -153,7 +150,7 @@ const numberBtnArr = Array.from(document.querySelectorAll('.number'));
 numberBtnArr.forEach(btn => btn.addEventListener('click', pressedNumber));
 
 const updateDisplayCalc = () => {
-    const formatCalcDisplay = (string) => {
+    const formatCalcDisplay = string => {
         const [int, dec]  = string.split('.');
         if (!dec || (dec.split('').every(digit => digit === '0'))) {
             if (int.length > 21) {
@@ -257,8 +254,6 @@ const calcAndRenderAnswer = () => {
         currentValue = answer.toString();
         equalAnswer = answer.toString();
         displayDigits(answer);
-        console.log(savedValues);
-        console.log(selectedOperators);
         savedValues = [];
         selectedOperators = [];
     }
@@ -330,7 +325,7 @@ signBtn.addEventListener('click', changeSign);
 
 document.addEventListener('keydown', e => {
     e.preventDefault();
-    if (e.key >= 0 && e.key <= 9) {
+    if (e.key >= 0 && e.key <= 9 && e.key !== ' ') {
         pressedNumber(e);
     } else if (e.key === '+' || e.key === '-' || e.key === '/' || e.key === '*') {
         pressedOperator(e);
@@ -341,8 +336,6 @@ document.addEventListener('keydown', e => {
     } else if (e.key === 'Enter' || e.key === '=') {
         pressedEqual();
     } else if (e.key === 'Clear') {
-        clear();
+        clear(); 
     }
 });
-
-// document.addEventListener('keydown', e => console.log(e));

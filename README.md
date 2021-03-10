@@ -2,4 +2,4 @@
 
 Simple calculator app using vanilla javascript.
 
-Live link: https://huskyharris.github.io/calculator/
+Live link: https://chriswu77.github.io/calculator/
